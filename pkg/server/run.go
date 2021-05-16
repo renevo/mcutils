@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,21 +23,20 @@ func (s *Server) Run(ctx context.Context) error {
 	args := []string{
 		"-Dlog4j.configurationFile=logging-config.xml",
 		"-jar", jarpath,
+		"--nogui",
 	}
 
 	cmd := exec.Command(java.ExecPath(s.JavaHome), args...)
-	cmd.Dir = s.Path
+	cmd.Dir, _ = filepath.Abs(filepath.FromSlash(s.Path))
 
-	// build up the environment
-	cmd.Env = []string{}
-	cmd.Env = append(cmd.Env, fmt.Sprintf("JAVA_HOME=%s", s.JavaHome))
-	cmd.Env = append(cmd.Env, "HOME", s.Path)
-	cmd.Env = append(cmd.Env, "APPDATA", s.Path)
+	// on windows we can't set env to clear then run, as it seems that it "needs" some stuff....
 
 	// temporary....
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
+	// idealistically we would run an background go routine here
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "failed to run server")
 	}
