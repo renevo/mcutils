@@ -25,8 +25,7 @@ func New() *cobra.Command {
 		Use:   "server",
 		Short: "Runs a minecraft server",
 		Long:  `Will download, configure, and run a Minecraft server. Without any configuration, this will be a default vanilla minecraft server on localhost`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(configFile) > 0 {
 				if err := hclsimple.DecodeFile(configFile, nil, &serverConfig); err != nil {
 					return errors.Wrap(err, "failed to parse config file")
@@ -37,6 +36,9 @@ func New() *cobra.Command {
 				}
 			}
 
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			log := logrus.WithFields(logrus.Fields{"version": srv.Version, "snapshot": srv.Snapshot, "name": srv.Name})
 			log.Info("Initialize the server here....")
 
@@ -53,6 +55,18 @@ func New() *cobra.Command {
 			return errors.Wrapf(srv.Run(context.Background()), "failed to run server")
 		},
 	}
+
+	serverCommand.AddCommand(&cobra.Command{
+		Use:   "validate",
+		Short: "Validates configuration",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log := logrus.WithFields(logrus.Fields{"version": srv.Version, "snapshot": srv.Snapshot, "name": srv.Name})
+			log.Info("Validated server configuration")
+			log.Printf("%+v", srv)
+
+			return nil
+		},
+	})
 
 	serverCommand.PersistentFlags().StringVar(&srv.Version, "version", "latest", "what version to run of minecraft")
 	serverCommand.PersistentFlags().BoolVar(&srv.Snapshot, "snapshot", false, "when version is latest, will use the latest snapshot version")
