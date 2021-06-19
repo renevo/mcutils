@@ -68,6 +68,26 @@ func New() *cobra.Command {
 		},
 	})
 
+	serverCommand.AddCommand(&cobra.Command{
+		Use:   "install",
+		Short: "Installs the configured minecraft server",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log := logrus.WithFields(logrus.Fields{"version": srv.Version, "snapshot": srv.Snapshot, "name": srv.Name})
+			log.Info("Initialize the server here....")
+
+			v, err := srv.Install(context.Background())
+			if err != nil {
+				return errors.Wrap(err, "failed to install server")
+			}
+
+			log.Infof("Version ID: %q; Type: %q; URL: %q;", v.ID, v.Type, v.Downloads.Server.URL)
+			log.Infof("JAVA_HOME: %q", srv.JavaHome)
+			log.Infof("Exec Path: %q", java.ExecPath(srv.JavaHome))
+
+			return nil
+		},
+	})
+
 	serverCommand.PersistentFlags().StringVar(&srv.Version, "version", "latest", "what version to run of minecraft")
 	serverCommand.PersistentFlags().BoolVar(&srv.Snapshot, "snapshot", false, "when version is latest, will use the latest snapshot version")
 	serverCommand.PersistentFlags().StringVarP(&configFile, "config", "c", "", "specify an optional configuration file")

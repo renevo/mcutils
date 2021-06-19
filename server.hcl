@@ -1,6 +1,6 @@
 server "Burpcraft" {
-    version = "latest"
-    snapshot = true
+    version = "1.17"
+    snapshot = false
     path = "./burpcraft"
 
     properties = {
