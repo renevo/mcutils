@@ -12,7 +12,7 @@ func WriteLoggingConfig(path string) error {
 	<Configuration>
 		<Appenders>
 			<Console name="console" target="SYSTEM_OUT">
-				<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%level] %msg%n" />
+				<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%level] %msg{nolookups}%n" />
 			</Console>
 		</Appenders>
 		<Loggers>

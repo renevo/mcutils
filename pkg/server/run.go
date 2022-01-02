@@ -21,6 +21,7 @@ func (s *Server) Run(ctx context.Context) error {
 	jarpath, _ := filepath.Abs(filepath.Join(s.Path, s.version.ID+".jar"))
 
 	args := []string{
+		"-Dlog4j2.formatMsgNoLookups=true", // log4j vulnerability patching
 		"-Dlog4j.configurationFile=logging-config.xml",
 		"-jar", jarpath,
 		"--nogui",
