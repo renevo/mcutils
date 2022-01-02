@@ -1,7 +1,7 @@
 server "Burpcraft" {
-    version = "1.17"
+    version = "1.18.1"
     snapshot = false
-    path = "./burpcraft"
+    path = "./burpcraft/9"
 
     properties = {
         motd = "Hello world"
