@@ -3,9 +3,11 @@ package minecraft
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/renevo/mcutils/pkg/java"
@@ -18,37 +20,34 @@ func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 		return errors.Wrap(err, "failed to write eula.txt")
 	}
 
-	// TODO: server.properties output
-
-	jarpath, _ := filepath.Abs(filepath.Join(s.Path, s.VersionDetails.ID+".jar"))
-
 	args := []string{
-		"-Dlog4j2.formatMsgNoLookups=true", // log4j vulnerability patching
-		"-Dlog4j.configurationFile=logging-config.xml",
-		"-jar", jarpath,
+		"-Dlog4j2.formatMsgNoLookups=true",             // log4j vulnerability patching
+		"-Dlog4j.configurationFile=logging-config.xml", // custom logging format so we can parse it
+		fmt.Sprintf("-Xms%dg", s.InitialMemory),
+		fmt.Sprintf("-Xmx%dg", s.MaxMemory),
+		"-jar", s.VersionDetails.ID + ".jar",
+		"nogui",
 		"--nogui",
 	}
 
+	// prepend the extra arguments
+	if len(s.JavaArgs) > 0 {
+		args = append(s.JavaArgs, args...)
+	}
+
+	// setup our cmd
 	cmd := exec.Command(java.ExecPath(s.JavaHome), args...)
 	cmd.Dir, _ = filepath.Abs(filepath.FromSlash(s.Path))
 
 	cmd.SysProcAttr = getSysProcAttr()
 
 	stdinpipe, _ := cmd.StdinPipe()
-	stdin := bufio.NewWriter(stdinpipe)
+	s.console = bufio.NewWriter(stdinpipe)
 
 	cmd.Stdout = &logParser{log: log}
 	cmd.Stderr = os.Stderr
 
-	go func() {
-		<-ctx.Done()
-		_, _ = stdin.Write([]byte("save-all\n"))
-		_ = stdin.Flush()
-
-		_, _ = stdin.Write([]byte("stop\r\n"))
-		_ = stdin.Flush()
-	}()
-
 	// output
+	log.Infof("Starting Server: %s", strings.Join(cmd.Args, " "))
 	return errors.Wrapf(cmd.Run(), "failed running server: %s", cmd.Path)
 }

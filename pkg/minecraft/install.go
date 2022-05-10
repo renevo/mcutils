@@ -41,5 +41,10 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 		return s.VersionDetails, err
 	}
 
+	// server.properties output
+	if err := s.WriteProperties(); err != nil {
+		return s.VersionDetails, errors.Wrap(err, "failed to merge server properties")
+	}
+
 	return s.VersionDetails, nil
 }

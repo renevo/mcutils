@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"bufio"
 	"context"
 	"os"
 	"path/filepath"
@@ -12,24 +13,31 @@ import (
 
 // Server for Minecraft
 type Server struct {
-	Name       string            `hcl:"name,label" property:"motd"`
-	Path       string            `hcl:"path"`
-	Version    string            `hcl:"version"`
-	Snapshot   bool              `hcl:"snapshot,optional"`
-	JavaHome   string            `hcl:"java_home,optional"`
-	Properties map[string]string `hcl:"properties,optional"`
+	Name          string     `hcl:"name,label" property:"motd"`
+	Path          string     `hcl:"path"`
+	Version       string     `hcl:"version"`
+	Snapshot      bool       `hcl:"snapshot,optional"`
+	JavaHome      string     `hcl:"java_home,optional"`
+	InitialMemory int        `hcl:"memory_min,optional"`
+	MaxMemory     int        `hcl:"memory_max,optional"`
+	JavaArgs      []string   `hcl:"java_extra_args,optional"`
+	Properties    Properties `hcl:"properties,optional"`
 
 	VersionDetails version.Version
+
+	console *bufio.Writer
 }
 
 // Default will return a default configured Minecraft server
 func Default() *Server {
 	return &Server{
-		Name:       "minecraft",
-		Path:       "./.minecraft/",
-		Version:    "latest",
-		JavaHome:   os.Getenv("JAVA_HOME"),
-		Properties: make(map[string]string),
+		Name:          "minecraft",
+		Path:          "./.minecraft/",
+		Version:       "latest",
+		JavaHome:      os.Getenv("JAVA_HOME"),
+		Properties:    Properties{},
+		InitialMemory: 1,
+		MaxMemory:     2,
 	}
 }
 
@@ -42,6 +50,7 @@ func (s *Server) Entrypoint() string {
 	return filepath.Join(s.Path, s.VersionDetails.ID+".jar")
 }
 
+// ResolveVersion from the minecraft version manifect API
 func (s *Server) ResolveVersion(ctx context.Context) error {
 	// get the manifest
 	manifest, err := version.GetManifest(ctx)
@@ -68,4 +77,17 @@ func (s *Server) ResolveVersion(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// ExecuteCommand against the server, this is a standard minecraft command
+func (s *Server) ExecuteCommand(cmd string) error {
+	if s.console == nil {
+		return errors.New("server console not available")
+	}
+
+	if _, err := s.console.Write([]byte(cmd + "\n")); err != nil {
+		return errors.Wrapf(err, "failed to send command %q", cmd)
+	}
+
+	return errors.Wrapf(s.console.Flush(), "failed to flush command %q to console", cmd)
 }

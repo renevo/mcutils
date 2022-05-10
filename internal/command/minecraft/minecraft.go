@@ -110,20 +110,28 @@ func New() *cobra.Command {
 			sigCh := make(chan os.Signal, 2)
 			signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-			go func() {
-				sig := <-sigCh
-				log.Infof("Stopping server... %v", sig)
-				cancel()
-			}()
-
 			log.Infof("Version ID: %q; Type: %q; URL: %q;", v.ID, v.Type, v.Downloads.Server.URL)
 			log.Infof("JAVA_HOME: %q", srv.JavaHome)
 			log.Infof("Exec Path: %q", java.ExecPath(srv.JavaHome))
 
+			// TODO: add support for sigint == save-all
+			go func() {
+				sig := <-sigCh
+				log.Infof("Stopping server... %v", sig)
+				if err := srv.ExecuteCommand("save-all"); err != nil {
+					log.Errorf("Failed to save: %v", err)
+				}
+				if err := srv.ExecuteCommand("stop"); err != nil {
+					log.Errorf("Failed to stop - server may be zombied: %v", err)
+				}
+
+				cancel()
+			}()
+
 			err = srv.Run(ctx, log)
 
 			if err != nil {
-				log.Infof("Stopped Server: %v", err)
+				log.Errorf("Stopped Server: %v", err)
 			} else {
 				log.Infof("Stopped Server")
 			}

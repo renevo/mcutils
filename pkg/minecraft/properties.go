@@ -1,5 +1,92 @@
 package minecraft
 
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+
+	"github.com/pkg/errors"
+)
+
+type Properties map[string]string
+
+// WriteProperties will merge the configuration properties into the server.properties for the instance
+func (s *Server) WriteProperties() error {
+	filePath := filepath.Join(s.Path, "server.properties")
+
+	existing := Properties{}
+	if err := existing.Open(filePath); err != nil {
+		return err
+	}
+
+	// merge from hcl file
+	for k, v := range s.Properties {
+		existing[k] = v
+	}
+
+	return existing.Save(filePath)
+}
+
+// Open a pre-existing properties file and load it
+func (p Properties) Open(file string) error {
+	propertiesFile, err := os.Open(file)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return errors.Wrapf(err, "failed to open properties file %q", file)
+		}
+
+		return nil
+	}
+
+	defer propertiesFile.Close()
+
+	scanner := bufio.NewScanner(propertiesFile)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		// comment
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// empty or not valid value
+		kv := strings.SplitN(line, "=", 2)
+		if len(kv) != 2 {
+			continue
+		}
+
+		// set the value
+		p[kv[0]] = kv[1]
+	}
+
+	return nil
+}
+
+// Save the properties to disk
+func (p Properties) Save(path string) error {
+	sb := strings.Builder{}
+	keys := make([]string, len(p))
+	current := 0
+	for k := range p {
+		keys[current] = k
+		current++
+	}
+
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		if _, err := sb.WriteString(fmt.Sprintf("%s=%s\n", k, p[k])); err != nil {
+			return errors.Wrapf(err, "failed to write key value %q", k)
+		}
+	}
+
+	return errors.Wrapf(os.WriteFile(path, []byte(sb.String()), 0644), "failed to write properties to file %q", path)
+}
+
 /*
 https://minecraft.fandom.com/wiki/Server.properties
 
