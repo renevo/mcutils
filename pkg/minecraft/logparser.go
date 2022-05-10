@@ -17,37 +17,60 @@ var (
 
 func (l *logParser) Write(d []byte) (int, error) {
 	lines := strings.Split(string(d), "\n")
+	type entry struct {
+		level   string
+		message string
+	}
+	entries := []entry{}
 
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
+	for _, raw := range lines {
+		line := strings.TrimSpace(raw)
 		if len(line) == 0 {
 			continue
 		}
 
 		matches := logRegex.FindStringSubmatch(line)
 		if len(matches) == 0 {
-			//l.log.Info(line)
+			if len(entries) == 0 {
+				continue
+			}
+
+			// append to the previous log entry
+			entries[len(entries)-1].message = entries[len(entries)-1].message + "\n" + raw
 			continue
 		}
 
 		if len(matches) != 3 {
-			l.log.Info(matches[0])
+			entries = append(entries, entry{level: "info", message: line})
 			continue
 		}
 
-		outputFn := l.log.Print
+		entries = append(entries, entry{level: strings.ToLower(matches[1]), message: matches[2]})
+	}
 
-		// level
-		switch strings.ToLower(matches[1]) {
+	for _, entry := range entries {
+		outputFn := l.log.Fatal // don't know what else there might be?
+
+		// level switch
+		switch entry.level {
+		case "trace":
+			outputFn = l.log.Trace
+
+		case "debug":
+			outputFn = l.log.Debug
+
 		case "info":
 			outputFn = l.log.Info
+
 		case "warn":
 			outputFn = l.log.Warning
+
 		case "error":
 			outputFn = l.log.Error
 		}
 
-		outputFn(matches[2])
+		outputFn(entry.message)
 	}
+
 	return len(d), nil
 }

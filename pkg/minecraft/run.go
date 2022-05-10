@@ -20,12 +20,13 @@ func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 		return errors.Wrap(err, "failed to write eula.txt")
 	}
 
+	_, jarFile := filepath.Split(s.Entrypoint())
 	args := []string{
 		"-Dlog4j2.formatMsgNoLookups=true",             // log4j vulnerability patching
 		"-Dlog4j.configurationFile=logging-config.xml", // custom logging format so we can parse it
 		fmt.Sprintf("-Xms%dg", s.InitialMemory),
 		fmt.Sprintf("-Xmx%dg", s.MaxMemory),
-		"-jar", s.VersionDetails.ID + ".jar",
+		"-jar", jarFile,
 		"nogui",
 		"--nogui",
 	}

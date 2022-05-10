@@ -3,6 +3,7 @@ package minecraft
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,17 +14,19 @@ import (
 
 // Server for Minecraft
 type Server struct {
-	Name          string     `hcl:"name,label" property:"motd"`
-	Path          string     `hcl:"path"`
-	Version       string     `hcl:"version"`
-	Snapshot      bool       `hcl:"snapshot,optional"`
-	JavaHome      string     `hcl:"java_home,optional"`
-	InitialMemory int        `hcl:"memory_min,optional"`
-	MaxMemory     int        `hcl:"memory_max,optional"`
-	JavaArgs      []string   `hcl:"java_extra_args,optional"`
-	Properties    Properties `hcl:"properties,optional"`
-
+	Name           string     `hcl:"name,label" property:"motd"`
+	Path           string     `hcl:"path"`
+	Version        string     `hcl:"version"`
+	Snapshot       bool       `hcl:"snapshot,optional"`
+	JavaHome       string     `hcl:"java_home,optional"`
+	InitialMemory  int        `hcl:"memory_min,optional"`
+	MaxMemory      int        `hcl:"memory_max,optional"`
+	JavaArgs       []string   `hcl:"java_extra_args,optional"`
+	Properties     Properties `hcl:"properties,optional"`
 	VersionDetails version.Version
+
+	FabricVersionLoader    string `hcl:"fabric_loader,optional"`
+	FabricVersionInstaller string `hcl:"fabric_installer,optional"`
 
 	console *bufio.Writer
 }
@@ -43,6 +46,24 @@ func Default() *Server {
 
 // Entrypoint returns the location of the Minecraft server jar
 func (s *Server) Entrypoint() string {
+	if fabric := s.FabricJar(); fabric != "" {
+		return fabric
+	}
+
+	return s.MinecraftJar()
+}
+
+// FabricJar to use
+func (s *Server) FabricJar() string {
+	if s.FabricVersionInstaller != "" && s.FabricVersionLoader != "" {
+		return filepath.Join(s.Path, fmt.Sprintf("fabric-server-mc.%s-loader.%s-launcher.%s.jar", s.VersionDetails.ID, s.FabricVersionLoader, s.FabricVersionInstaller))
+	}
+
+	return ""
+}
+
+// Minecraft jar to use
+func (s *Server) MinecraftJar() string {
 	if s.VersionDetails.ID == "" {
 		return filepath.Join(s.Path, "server.jar")
 	}

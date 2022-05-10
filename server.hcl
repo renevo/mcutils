@@ -3,6 +3,9 @@ server "Burpcraft" {
   snapshot = false
   path     = "./burpcraft/vanilla"
 
+  fabric_loader    = "0.13.3"
+  fabric_installer = "0.10.2"
+
   memory_min = 1
   memory_max = 4
 

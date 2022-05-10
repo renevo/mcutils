@@ -16,7 +16,7 @@ func WriteLoggingConfig(path string) error {
 			</Console>
 		</Appenders>
 		<Loggers>
-			<Root level="info">
+			<Root level="debug">
 				<AppenderRef ref="console" />
 			</Root>
 		</Loggers>
