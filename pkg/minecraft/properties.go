@@ -84,7 +84,7 @@ func (p Properties) Save(path string) error {
 		}
 	}
 
-	return errors.Wrapf(os.WriteFile(path, []byte(sb.String()), 0644), "failed to write properties to file %q", path)
+	return errors.Wrapf(os.WriteFile(path, []byte(sb.String()), 0744), "failed to write properties to file %q", path)
 }
 
 /*

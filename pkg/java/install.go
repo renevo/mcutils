@@ -31,7 +31,7 @@ func (v VersionMap) Install(ctx context.Context, version int, installPath string
 
 	outputPath := filepath.Join(installPath, "java", fmt.Sprintf("%d", version))
 
-	if err := os.MkdirAll(outputPath, 0644); err != nil {
+	if err := os.MkdirAll(outputPath, 0744); err != nil {
 		return errors.Wrapf(err, "failed to create java install path %q", outputPath)
 	}
 

@@ -16,7 +16,7 @@ import (
 
 func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 	// eula
-	if err := os.WriteFile(filepath.Join(s.Path, "eula.txt"), []byte("eula=true"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(s.Path, "eula.txt"), []byte("eula=true"), 0744); err != nil {
 		return errors.Wrap(err, "failed to write eula.txt")
 	}
 

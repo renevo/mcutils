@@ -24,7 +24,7 @@ func WriteLoggingConfig(path string) error {
 
 	outputFile := filepath.Join(path, "logging-config.xml")
 
-	if err := os.WriteFile(outputFile, []byte(consoleConfig), 0644); err != nil {
+	if err := os.WriteFile(outputFile, []byte(consoleConfig), 0744); err != nil {
 		return errors.Wrapf(err, "failed to write logging configuration %q", outputFile)
 	}
 

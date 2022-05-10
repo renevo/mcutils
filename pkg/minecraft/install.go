@@ -20,7 +20,7 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 	}
 
 	// create the output directory
-	if err := os.MkdirAll(s.Path, 0644); err != nil {
+	if err := os.MkdirAll(s.Path, 0744); err != nil {
 		return s.VersionDetails, errors.Wrapf(err, "failed to create server directory %q", s.Path)
 	}
 
@@ -59,7 +59,7 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 			}
 		}
 
-		if err := os.WriteFile(fabricSettings, []byte(fmt.Sprintf("serverJar=%s.jar", s.MinecraftJar())), 0644); err != nil {
+		if err := os.WriteFile(fabricSettings, []byte(fmt.Sprintf("serverJar=%s.jar", s.MinecraftJar())), 0744); err != nil {
 			return s.VersionDetails, errors.Wrapf(err, "failed to write fabric properties: %q", fabricSettings)
 		}
 	}
