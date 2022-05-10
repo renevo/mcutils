@@ -97,6 +97,12 @@ func New() *cobra.Command {
 			}
 
 			log := logrus.WithFields(logrus.Fields{"version": srv.Version, "snapshot": srv.Snapshot, "name": srv.Name})
+			if srv.FabricJar() != "" {
+				log = log.WithFields(logrus.Fields{"flavor": "fabric", "fabric": srv.FabricVersionLoader})
+			} else {
+				log = log.WithField("flavor", "vanilla")
+			}
+
 			log.Info("Installing server and dependencies")
 
 			ctx, cancel := context.WithCancel(context.Background())

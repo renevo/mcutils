@@ -12,10 +12,17 @@ type logParser struct {
 }
 
 var (
-	logRegex = regexp.MustCompile(`^(?:\d+\-\d+-\d+\s\d+:\d+:\d+)\s\[(\w+)\]\s(.*)$`)
+	logRegex = regexp.MustCompile(`^(?:(?:\d+\-\d+-\d+\s)?\[?\d+:\d+:\d+\]?)\s\[(\w+)\]\s(.*)$`)
 )
 
 func (l *logParser) Write(d []byte) (int, error) {
+	// panic prevention on logs
+	defer func() {
+		if r := recover(); r != nil {
+			l.log.Errorf("Recovered in logParser.Write: %v", r)
+		}
+	}()
+
 	lines := strings.Split(string(d), "\n")
 	type entry struct {
 		level   string
@@ -32,6 +39,8 @@ func (l *logParser) Write(d []byte) (int, error) {
 		matches := logRegex.FindStringSubmatch(line)
 		if len(matches) == 0 {
 			if len(entries) == 0 {
+				// no idea what it is... output it to be safe
+				l.log.Info(line)
 				continue
 			}
 
@@ -69,7 +78,7 @@ func (l *logParser) Write(d []byte) (int, error) {
 			outputFn = l.log.Error
 		}
 
-		outputFn(entry.message)
+		outputFn(strings.TrimSpace(entry.message))
 	}
 
 	return len(d), nil

@@ -2,8 +2,10 @@ package command
 
 import (
 	"os"
+	"runtime"
 
 	"github.com/renevo/mcutils/internal/command/minecraft"
+	"github.com/shiena/ansicolor"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +26,14 @@ func Execute(args []string) error {
 			} else {
 				logrus.SetFormatter(&logrus.TextFormatter{
 					DisableColors: nocolorLogging,
+					ForceColors:   !nocolorLogging,
+					FullTimestamp: true,
 				})
+
+				if runtime.GOOS == "windows" {
+					// then wrap the log output with it
+					logrus.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
+				}
 			}
 
 			if verboseLogging {
