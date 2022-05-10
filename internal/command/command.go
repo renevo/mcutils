@@ -3,8 +3,7 @@ package command
 import (
 	"os"
 
-	"github.com/renevo/mcutils/internal/command/clientcommand"
-	"github.com/renevo/mcutils/internal/command/servercommand"
+	"github.com/renevo/mcutils/internal/command/minecraft"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -46,8 +45,7 @@ func Execute(args []string) error {
 
 	// add commands here:
 	rootCommand.AddCommand(
-		clientcommand.New(),
-		servercommand.New(),
+		minecraft.New(),
 	)
 
 	// execute

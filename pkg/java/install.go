@@ -35,6 +35,12 @@ func (v VersionMap) Install(ctx context.Context, version int, installPath string
 		return errors.Wrapf(err, "failed to create java install path %q", outputPath)
 	}
 
+	// check for java version already installed
+	javaReleaseInfo := filepath.Join(installPath, VersionPaths[version], "release")
+	if stat, _ := os.Stat(javaReleaseInfo); stat != nil && stat.Size() > 0 {
+		return nil
+	}
+
 	if strings.HasSuffix(endpoint, ".zip") {
 		return download.ExtractZip(ctx, endpoint, outputPath)
 	}

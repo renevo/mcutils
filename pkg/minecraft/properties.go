@@ -1,4 +1,4 @@
-package server
+package minecraft
 
 /*
 https://minecraft.fandom.com/wiki/Server.properties

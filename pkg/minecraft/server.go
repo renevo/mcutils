@@ -1,9 +1,12 @@
-package server
+package minecraft
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
+	"github.com/renevo/mcutils/pkg/java"
 	"github.com/renevo/mcutils/pkg/minecraft/version"
 )
 
@@ -16,7 +19,7 @@ type Server struct {
 	JavaHome   string            `hcl:"java_home,optional"`
 	Properties map[string]string `hcl:"properties,optional"`
 
-	version version.Version
+	VersionDetails version.Version
 }
 
 // Default will return a default configured Minecraft server
@@ -32,9 +35,37 @@ func Default() *Server {
 
 // Entrypoint returns the location of the Minecraft server jar
 func (s *Server) Entrypoint() string {
-	if s.version.ID == "" {
+	if s.VersionDetails.ID == "" {
 		return filepath.Join(s.Path, "server.jar")
 	}
 
-	return filepath.Join(s.Path, s.version.ID+".jar")
+	return filepath.Join(s.Path, s.VersionDetails.ID+".jar")
+}
+
+func (s *Server) ResolveVersion(ctx context.Context) error {
+	// get the manifest
+	manifest, err := version.GetManifest(ctx)
+	if err != nil {
+		return err
+	}
+
+	// lookup the version
+	lookupVersion := s.Version
+	if s.Version == "latest" && s.Snapshot {
+		lookupVersion = "snapshot"
+	}
+
+	v, err := manifest.GetVersion(ctx, lookupVersion)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get version %q", s.Version)
+	}
+
+	s.VersionDetails = v
+
+	// setup the java home
+	if s.JavaHome == "" {
+		s.JavaHome, _ = filepath.Abs(filepath.Join(s.Path, java.VersionPaths[s.VersionDetails.Java.Version]))
+	}
+
+	return nil
 }
