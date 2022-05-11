@@ -45,10 +45,15 @@ func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 	stdinpipe, _ := cmd.StdinPipe()
 	s.console = bufio.NewWriter(stdinpipe)
 
-	cmd.Stdout = &logParser{log: log}
+	s.fsm = s.createFSM()
+
+	cmd.Stdout = &logParser{log: log, srv: s}
 	cmd.Stderr = os.Stderr
 
 	// output
-	log.Infof("Starting Server: %s", strings.Join(cmd.Args, " "))
-	return errors.Wrapf(cmd.Run(), "failed running server: %s", cmd.Path)
+	log.Infof("Starting server: %s", strings.Join(cmd.Args, " "))
+	err := errors.Wrapf(cmd.Run(), "failed running server: %s", cmd.Path)
+	_, _ = cmd.Stdout.Write([]byte("Stopped the server"))
+
+	return err
 }

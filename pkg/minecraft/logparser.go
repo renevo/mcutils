@@ -9,6 +9,7 @@ import (
 
 type logParser struct {
 	log *logrus.Entry
+	srv *Server
 }
 
 var (
@@ -32,15 +33,18 @@ func (l *logParser) Write(d []byte) (int, error) {
 
 	for _, raw := range lines {
 		line := strings.TrimSpace(raw)
+
+		// empty lines no good
 		if len(line) == 0 {
 			continue
 		}
 
 		matches := logRegex.FindStringSubmatch(line)
+		// didn't match the regex
 		if len(matches) == 0 {
 			if len(entries) == 0 {
 				// no idea what it is... output it to be safe
-				l.log.Info(line)
+				entries = append(entries, entry{level: "info", message: line})
 				continue
 			}
 
@@ -49,6 +53,7 @@ func (l *logParser) Write(d []byte) (int, error) {
 			continue
 		}
 
+		// didn't match the regex correctly?
 		if len(matches) != 3 {
 			entries = append(entries, entry{level: "info", message: line})
 			continue
@@ -58,27 +63,31 @@ func (l *logParser) Write(d []byte) (int, error) {
 	}
 
 	for _, entry := range entries {
-		outputFn := l.log.Fatal // don't know what else there might be?
+		msg := strings.TrimSpace(entry.message)
+		l.srv.handleMessage(msg, l.log)
+
+		stateLogger := l.log.WithField("state", l.srv.State())
+
+		outputFn := stateLogger.Error // don't know what else there might be?
 
 		// level switch
 		switch entry.level {
 		case "trace":
-			outputFn = l.log.Trace
+			outputFn = stateLogger.Trace
 
 		case "debug":
-			outputFn = l.log.Debug
+			outputFn = stateLogger.Debug
 
 		case "info":
-			outputFn = l.log.Info
+			outputFn = stateLogger.Info
 
 		case "warn":
-			outputFn = l.log.Warning
+			outputFn = stateLogger.Warning
 
-		case "error":
-			outputFn = l.log.Error
 		}
 
-		outputFn(strings.TrimSpace(entry.message))
+		outputFn(msg)
+
 	}
 
 	return len(d), nil

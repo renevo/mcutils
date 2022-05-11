@@ -128,6 +128,7 @@ func serverCommands() []*cobra.Command {
 				if err := srv.ExecuteCommand("save-all"); err != nil {
 					log.Errorf("Failed to save: %v", err)
 				}
+
 				if err := srv.ExecuteCommand("stop"); err != nil {
 					log.Errorf("Failed to stop - server may be zombied: %v", err)
 				}
@@ -167,9 +168,7 @@ func serverCommands() []*cobra.Command {
 			err = srv.Run(ctx, log)
 
 			if err != nil {
-				log.Errorf("Stopped Server: %v", err)
-			} else {
-				log.Infof("Stopped Server")
+				log.Errorf("Server Error: %v", err)
 			}
 
 			return err

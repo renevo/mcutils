@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/renevo/mcutils/pkg/java"
 	"github.com/renevo/mcutils/pkg/minecraft/version"
@@ -31,11 +32,12 @@ type Server struct {
 	FabricVersionInstaller string `hcl:"fabric_installer,optional"`
 
 	console *bufio.Writer
+	fsm     *fsm.FSM
 }
 
 // Default will return a default configured Minecraft server
 func Default() *Server {
-	return &Server{
+	s := &Server{
 		Name:          "minecraft",
 		Path:          "./.minecraft/",
 		Version:       "latest",
@@ -44,6 +46,10 @@ func Default() *Server {
 		InitialMemory: 1,
 		MaxMemory:     2,
 	}
+
+	s.fsm = s.createFSM()
+
+	return s
 }
 
 // Entrypoint returns the location of the Minecraft server jar
