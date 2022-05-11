@@ -14,15 +14,17 @@ import (
 
 // Server for Minecraft
 type Server struct {
-	Name           string     `hcl:"name,label" property:"motd"`
-	Path           string     `hcl:"path"`
-	Version        string     `hcl:"version"`
-	Snapshot       bool       `hcl:"snapshot,optional"`
-	JavaHome       string     `hcl:"java_home,optional"`
-	InitialMemory  int        `hcl:"memory_min,optional"`
-	MaxMemory      int        `hcl:"memory_max,optional"`
-	JavaArgs       []string   `hcl:"java_extra_args,optional"`
-	Properties     Properties `hcl:"properties,optional"`
+	Name          string     `hcl:"name,label" property:"motd"`
+	Path          string     `hcl:"path"`
+	Version       string     `hcl:"version"`
+	Snapshot      bool       `hcl:"snapshot,optional"`
+	JavaHome      string     `hcl:"java_home,optional"`
+	InitialMemory int        `hcl:"memory_min,optional"`
+	MaxMemory     int        `hcl:"memory_max,optional"`
+	JavaArgs      []string   `hcl:"java_extra_args,optional"`
+	Properties    Properties `hcl:"properties,optional"`
+	ControlAddr   string     `hcl:"control_address,optional"`
+
 	VersionDetails version.Version
 
 	FabricVersionLoader    string `hcl:"fabric_loader,optional"`

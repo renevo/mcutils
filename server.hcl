@@ -31,4 +31,7 @@ server "Burpcraft" {
     max-players       = 20
     force-gamemode    = true
   }
+
+  // allows for remote control over RPC
+  control_address = "127.0.0.1:2311"
 }
