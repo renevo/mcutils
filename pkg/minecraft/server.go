@@ -110,8 +110,8 @@ func (s *Server) ResolveVersion(ctx context.Context) error {
 
 // ExecuteCommand against the server, this is a standard minecraft command
 func (s *Server) ExecuteCommand(cmd string) error {
-	if s.console == nil {
-		return errors.New("server console not available")
+	if !s.fsm.Is(StateOnline) {
+		return errors.Errorf("server is %s", s.fsm.Current())
 	}
 
 	if _, err := s.console.Write([]byte(cmd + "\n")); err != nil {

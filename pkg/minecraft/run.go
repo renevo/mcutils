@@ -45,8 +45,6 @@ func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 	stdinpipe, _ := cmd.StdinPipe()
 	s.console = bufio.NewWriter(stdinpipe)
 
-	s.fsm = s.createFSM()
-
 	cmd.Stdout = &logParser{log: log, srv: s}
 	cmd.Stderr = os.Stderr
 
