@@ -12,6 +12,7 @@ import (
 
 func clientCommands() []*cobra.Command {
 	address := "127.0.0.1:2311"
+	token := ""
 
 	commands := []*cobra.Command{}
 
@@ -23,6 +24,8 @@ func clientCommands() []*cobra.Command {
 		if err != nil {
 			return errors.Wrapf(err, "failed to dial %q", address)
 		}
+
+		ctx = rpc.ContextWithHeaders(ctx, rpc.Header{}.Set(rpcHeaderToken, token))
 
 		reply := ""
 		if err := client.Call(ctx, "Minecraft."+method, command, &reply); err != nil {
@@ -53,6 +56,7 @@ func clientCommands() []*cobra.Command {
 
 	for _, cmd := range commands {
 		cmd.Flags().StringVarP(&address, "address", "a", address, "Specify the address:port for the server rpc endpoint")
+		cmd.Flags().StringVarP(&token, "token", "t", token, "token to use when making requests to the server")
 	}
 
 	return commands

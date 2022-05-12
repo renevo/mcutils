@@ -34,4 +34,5 @@ server "Burpcraft" {
 
   // allows for remote control over RPC
   control_address = "127.0.0.1:2311"
+  control_token   = "s3cr3t"
 }

@@ -16,7 +16,7 @@ func (m *Minecraft) Execute(ctx context.Context, cmd string, reply *string) erro
 		return err
 	}
 
-	*reply = "Executed command"
+	*reply = fmt.Sprintf("Executed command: %q", cmd)
 
 	return nil
 }
@@ -30,7 +30,7 @@ func (m *Minecraft) WhitelistAdd(ctx context.Context, user string, reply *string
 		return err
 	}
 
-	*reply = "Whitelist updated"
+	*reply = fmt.Sprintf("Whitelist added %q and reloaded", user)
 
 	return nil
 }

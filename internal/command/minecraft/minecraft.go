@@ -2,6 +2,10 @@ package minecraft
 
 import "github.com/spf13/cobra"
 
+const (
+	rpcHeaderToken = "X-Minecraft-Token"
+)
+
 func New() *cobra.Command {
 	minecraftCommand := &cobra.Command{
 		Use:   "minecraft",

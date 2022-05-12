@@ -150,13 +150,30 @@ func serverCommands() []*cobra.Command {
 
 				log.Infof("RPC Control Server Running on %v", ln.Addr().String())
 
-				// TODO: probably implement a token ... so its not wide open to the world to do stuff
+				// logging middleware
 				controlServer.Use(func(next rpc.MiddlewareHandler) rpc.MiddlewareHandler {
 					return func(ctx context.Context, rw rpc.ResponseWriter, req *rpc.Request) {
 						start := time.Now()
 						log.Infof("RPC executing %q", req.ServiceMethod)
 						next(ctx, rw, req)
-						log.Infof("RPC executed %q in %v", req.ServiceMethod, time.Since(start))
+						if rw.Err() == nil {
+							log.Infof("RPC executed %q in %v", req.ServiceMethod, time.Since(start))
+						} else {
+							log.Warnf("RPC executed %q with error %v in %v", req.ServiceMethod, rw.Err(), time.Since(start))
+						}
+					}
+				})
+
+				// auth middleware
+				controlServer.Use(func(next rpc.MiddlewareHandler) rpc.MiddlewareHandler {
+					return func(ctx context.Context, rw rpc.ResponseWriter, req *rpc.Request) {
+						token := rpc.ContextHeader(ctx).Get(rpcHeaderToken)
+						if token != srv.ControlToken {
+							rw.WriteError(errors.New("invalid minecraft control token"))
+							return
+						}
+
+						next(ctx, rw, req)
 					}
 				})
 
