@@ -2,39 +2,35 @@ package minecraft
 
 import (
 	"context"
-	"net"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
 	"github.com/pkg/errors"
-	"github.com/renevo/mcutils/internal/control"
+	"github.com/portcullis/application"
+	"github.com/renevo/mcutils/internal/command/minecraft/modules/cnc"
+	"github.com/renevo/mcutils/internal/command/minecraft/modules/mcserver"
 	"github.com/renevo/mcutils/pkg/java"
 	"github.com/renevo/mcutils/pkg/minecraft"
-	"github.com/renevo/rpc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 func serverCommands() []*cobra.Command {
-	configFile := "./server.hcl"
+	configFile := "./minecraft.hcl"
 
 	srv := minecraft.Default()
-	serverConfig := struct {
-		Server []*minecraft.Server `hcl:"server,block"`
+	minecraftConfig := struct {
+		Minecraft []*minecraft.Server `hcl:"minecraft,block"`
 	}{
-		Server: []*minecraft.Server{srv},
+		Minecraft: []*minecraft.Server{srv},
 	}
 
 	loadConfig := func() error {
 		if len(configFile) > 0 {
-			if err := hclsimple.DecodeFile(configFile, nil, &serverConfig); err != nil {
+			if err := hclsimple.DecodeFile(configFile, nil, &minecraftConfig); err != nil {
 				return errors.Wrap(err, "failed to parse config file")
 			}
 
-			if len(serverConfig.Server) != 1 {
+			if len(minecraftConfig.Minecraft) != 1 {
 				return errors.New("you must specify exactly one server block in the configuration file")
 			}
 		}
@@ -92,103 +88,11 @@ func serverCommands() []*cobra.Command {
 		Use:   "run",
 		Short: "Run a minecraft server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := loadConfig(); err != nil {
-				return err
-			}
-
-			log := logrus.WithFields(logrus.Fields{"version": srv.Version, "snapshot": srv.Snapshot, "name": srv.Name})
-			if srv.FabricJar() != "" {
-				log = log.WithFields(logrus.Fields{"flavor": "fabric", "fabric": srv.FabricVersionLoader})
-			} else {
-				log = log.WithField("flavor", "vanilla")
-			}
-
-			log.Info("Installing server and dependencies")
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			v, err := srv.Install(ctx)
-			if err != nil {
-				return errors.Wrap(err, "failed to install server")
-			}
-
-			sigCh := make(chan os.Signal, 2)
-			signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-
-			log.Infof("Version ID: %q; Type: %q; URL: %q;", v.ID, v.Type, v.Downloads.Server.URL)
-			log.Infof("JAVA_HOME: %q", srv.JavaHome)
-			log.Infof("Exec Path: %q", java.ExecPath(srv.JavaHome))
-
-			// TODO: add support for sigint == save-all
-			// TODO: add shutdown timeout to just kill the java pid
-			go func() {
-				sig := <-sigCh
-				log.Infof("Stopping server... %v", sig)
-				if err := srv.ExecuteCommand("save-all"); err != nil {
-					log.Errorf("Failed to save: %v", err)
-				}
-
-				if err := srv.ExecuteCommand("stop"); err != nil {
-					log.Errorf("Failed to stop - server may be zombied: %v", err)
-				}
-
-				cancel()
-			}()
-
-			if srv.ControlAddr != "" {
-				controlServer := rpc.NewServer()
-				if err := controlServer.Register(&control.Minecraft{Server: srv}); err != nil {
-					panic(err)
-				}
-
-				ln, err := net.Listen("tcp", srv.ControlAddr)
-				if err != nil {
-					return errors.Wrapf(err, "failed to open control server: %q", srv.ControlAddr)
-				}
-				defer ln.Close()
-
-				log.Infof("RPC Control Server Running on %v", ln.Addr().String())
-
-				// logging middleware
-				controlServer.Use(func(next rpc.MiddlewareHandler) rpc.MiddlewareHandler {
-					return func(ctx context.Context, rw rpc.ResponseWriter, req *rpc.Request) {
-						start := time.Now()
-						log.Infof("RPC executing %q", req.ServiceMethod)
-						next(ctx, rw, req)
-						if rw.Err() == nil {
-							log.Infof("RPC executed %q in %v", req.ServiceMethod, time.Since(start))
-						} else {
-							log.Warnf("RPC executed %q with error %v in %v", req.ServiceMethod, rw.Err(), time.Since(start))
-						}
-					}
-				})
-
-				// auth middleware
-				controlServer.Use(func(next rpc.MiddlewareHandler) rpc.MiddlewareHandler {
-					return func(ctx context.Context, rw rpc.ResponseWriter, req *rpc.Request) {
-						token := rpc.ContextHeader(ctx).Get(rpcHeaderToken)
-						if token != srv.ControlToken {
-							rw.WriteError(errors.New("invalid minecraft control token"))
-							return
-						}
-
-						next(ctx, rw, req)
-					}
-				})
-
-				go func() {
-					controlServer.Accept(ctx, ln)
-				}()
-			}
-
-			err = srv.Run(ctx, log)
-
-			if err != nil {
-				log.Errorf("Server Error: %v", err)
-			}
-
-			return err
+			return application.Run("mcutils", "1.0.0",
+				application.WithConfigFile(configFile),
+				application.WithModule("Minecraft", mcserver.New()),
+				application.WithModule("Command & Control", cnc.New()),
+			)
 		},
 	})
 

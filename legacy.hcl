@@ -1,4 +1,4 @@
-server "Burpcraft" {
+minecraft "Burpcraft" {
   version  = "1.12.2"
   snapshot = false
   path     = "./burpcraft/legacy"

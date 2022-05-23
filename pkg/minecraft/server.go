@@ -24,8 +24,6 @@ type Server struct {
 	MaxMemory      int        `hcl:"memory_max,optional"`
 	JavaArgs       []string   `hcl:"java_extra_args,optional"`
 	Properties     Properties `hcl:"properties,optional"`
-	ControlAddr    string     `hcl:"control_address,optional"`
-	ControlToken   string     `hcl:"control_token,optional"`
 	VersionDetails version.Version
 
 	FabricVersionLoader    string `hcl:"fabric_loader,optional"`

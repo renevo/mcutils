@@ -1,4 +1,4 @@
-server "Burpcraft" {
+minecraft "Burpcraft" {
   version  = "1.18.2"
   snapshot = false
   path     = "./burpcraft/vanilla"
@@ -31,8 +31,8 @@ server "Burpcraft" {
     max-players       = 20
     force-gamemode    = true
   }
-
-  // allows for remote control over RPC
-  control_address = "127.0.0.1:2311"
-  control_token   = "s3cr3t"
 }
+
+// allows for remote control over RPC
+control_address = "127.0.0.1:2311"
+control_token   = "s3cr3t"
