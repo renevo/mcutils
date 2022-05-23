@@ -46,9 +46,10 @@ func (m *module) Start(ctx context.Context) error {
 	}
 
 	srv := ext.Minecraft(ctx)
+	sub := ext.Subscriber(ctx)
 
 	m.server = rpc.NewServer()
-	if err := m.server.Register(&control.Minecraft{Server: srv}); err != nil {
+	if err := m.server.Register(&control.Minecraft{Controller: &control.MinecraftController{Server: srv, Subscriber: sub}}); err != nil {
 		return errors.Wrap(err, "failed to initialize minecraft control server")
 	}
 

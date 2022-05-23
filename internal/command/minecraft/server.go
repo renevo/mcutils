@@ -8,6 +8,7 @@ import (
 	"github.com/portcullis/application"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/cnc"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/mcserver"
+	"github.com/renevo/mcutils/internal/command/minecraft/modules/pubsub"
 	"github.com/renevo/mcutils/pkg/java"
 	"github.com/renevo/mcutils/pkg/minecraft"
 	"github.com/sirupsen/logrus"
@@ -90,6 +91,7 @@ func serverCommands() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return application.Run("mcutils", "1.0.0",
 				application.WithConfigFile(configFile),
+				application.WithModule("PubSub", pubsub.New()),
 				application.WithModule("Minecraft", mcserver.New()),
 				application.WithModule("Command & Control", cnc.New()),
 			)

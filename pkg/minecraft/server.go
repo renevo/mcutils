@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/renevo/mcutils/pkg/java"
@@ -29,8 +30,9 @@ type Server struct {
 	FabricVersionLoader    string `hcl:"fabric_loader,optional"`
 	FabricVersionInstaller string `hcl:"fabric_installer,optional"`
 
-	console *bufio.Writer
-	fsm     *fsm.FSM
+	console   *bufio.Writer
+	fsm       *fsm.FSM
+	publisher message.Publisher
 }
 
 // Default will return a default configured Minecraft server

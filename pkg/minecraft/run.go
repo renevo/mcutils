@@ -9,12 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/pkg/errors"
 	"github.com/renevo/mcutils/pkg/java"
 	"github.com/sirupsen/logrus"
 )
 
-func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
+func (s *Server) Run(ctx context.Context, log *logrus.Entry, publisher message.Publisher) error {
+	s.publisher = publisher
+
 	// eula
 	if err := os.WriteFile(filepath.Join(s.Path, "eula.txt"), []byte("eula=true"), 0744); err != nil {
 		return errors.Wrap(err, "failed to write eula.txt")
@@ -50,8 +53,8 @@ func (s *Server) Run(ctx context.Context, log *logrus.Entry) error {
 
 	// output
 	log.Infof("Starting server: %s", strings.Join(cmd.Args, " "))
-	err := errors.Wrapf(cmd.Run(), "failed running server: %s", cmd.Path)
-	_, _ = cmd.Stdout.Write([]byte("Stopped the server"))
+	err := cmd.Run()
+	_, _ = cmd.Stdout.Write([]byte("Server stopped"))
 
 	return err
 }

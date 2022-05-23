@@ -3,6 +3,8 @@ package minecraft
 import (
 	"regexp"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/looplab/fsm"
 	"github.com/sirupsen/logrus"
 )
@@ -15,10 +17,16 @@ const (
 )
 
 const (
-	EventSaving      = "saving"
-	EventSaved       = "saved"
-	EventPlayerJoin  = "player_join"
-	EventPlayerLeave = "player_leave"
+	EventSaving            = "saving"
+	EventSaved             = "saved"
+	EventPlayerJoin        = "player_join"
+	EventPlayerLeave       = "player_leave"
+	EventWhitelistAdd      = "player_whitelist_add"
+	EventWhitelistRemove   = "player_whitelist_remove"
+	EventWhitelistUnknown  = "player_whitelist_unknown"
+	EventWhitelistReloaded = "whitelist_reloaded"
+	EventServerChat        = "server_chat"
+	EventServerEmote       = "server_emote"
 )
 
 func (s *Server) createFSM() *fsm.FSM {
@@ -46,26 +54,61 @@ var stateMatchers = map[string]*regexp.Regexp{
 }
 
 var eventMatchers = map[string]*regexp.Regexp{
-	EventSaving: regexp.MustCompile(`^Saving the game \(this may take a moment!\)$`),
-	EventSaved:  regexp.MustCompile(`Saved the game$`),
+	EventSaving:            regexp.MustCompile(`^Saving the game \(this may take a moment!\)$`),
+	EventSaved:             regexp.MustCompile(`Saved the game$`),
+	EventWhitelistAdd:      regexp.MustCompile(`^Added (?P<player>.*) to the whitelist$`),
+	EventWhitelistRemove:   regexp.MustCompile(`^Removed (?P<player>.*) from the whitelist$`),
+	EventWhitelistUnknown:  regexp.MustCompile(`^That player does not exist$`),
+	EventWhitelistReloaded: regexp.MustCompile(`^Reloaded the whitelist$`),
+	EventServerChat:        regexp.MustCompile(`^\[Server\] (?P<msg>.*)$`),
+	EventServerEmote:       regexp.MustCompile(`^\* Server (?P<msg>.*)$`),
 }
 
 func (s *Server) handleMessage(msg string, log *logrus.Entry) {
 	for k, v := range stateMatchers {
-		if v.MatchString(msg) {
+
+		if matches := v.FindStringSubmatch(msg); len(matches) > 0 {
 			if err := s.fsm.Event(k); err != nil {
 				log.WithField("state", s.State()).Errorf("Failed to set state: %q", k)
 			}
 
-			// TODO: publish event for k
-			log.WithField("state", s.State()).Infof("Event: %q", k)
+			log.WithField("state", s.State()).Debugf("Event: %q", k)
+
+			if s.publisher == nil {
+				continue
+			}
+
+			msg := &message.Message{
+				UUID:     watermill.NewUUID(),
+				Payload:  []byte(msg),
+				Metadata: message.Metadata{},
+			}
+			for i, name := range v.SubexpNames() {
+				msg.Metadata[name] = matches[i]
+			}
+
+			_ = s.publisher.Publish(k, msg)
 		}
 	}
 
 	for k, v := range eventMatchers {
-		if v.MatchString(msg) {
-			// TODO: publish event for k
-			log.Infof("Event: %q", k)
+		if matches := v.FindStringSubmatch(msg); len(matches) > 0 {
+			log.Debugf("Event: %q", k)
+
+			if s.publisher == nil {
+				continue
+			}
+
+			msg := &message.Message{
+				UUID:     watermill.NewUUID(),
+				Payload:  []byte(msg),
+				Metadata: message.Metadata{},
+			}
+			for i, name := range v.SubexpNames() {
+				msg.Metadata[name] = matches[i]
+			}
+
+			_ = s.publisher.Publish(k, msg)
 		}
 	}
 }
