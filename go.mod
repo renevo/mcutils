@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/looplab/fsm v0.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/portcullis/application v0.0.0-20220423222359-aee327423f66
+	github.com/portcullis/application v0.0.0-20220609171158-fd56b7f9ad5f
 	github.com/portcullis/logging v0.1.1
 	github.com/renevo/rpc v0.2.0
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18

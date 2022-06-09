@@ -26,7 +26,6 @@ const (
 	EventWhitelistUnknown  = "player_whitelist_unknown"
 	EventWhitelistReloaded = "whitelist_reloaded"
 	EventServerChat        = "server_chat"
-	EventServerEmote       = "server_emote"
 )
 
 func (s *Server) createFSM() *fsm.FSM {
@@ -60,8 +59,7 @@ var eventMatchers = map[string]*regexp.Regexp{
 	EventWhitelistRemove:   regexp.MustCompile(`^Removed (?P<player>.*) from the whitelist$`),
 	EventWhitelistUnknown:  regexp.MustCompile(`^That player does not exist$`),
 	EventWhitelistReloaded: regexp.MustCompile(`^Reloaded the whitelist$`),
-	EventServerChat:        regexp.MustCompile(`^\[Server\] (?P<msg>.*)$`),
-	EventServerEmote:       regexp.MustCompile(`^\* Server (?P<msg>.*)$`),
+	EventServerChat:        regexp.MustCompile(`^(\<|\* |\[)Server(?:\>|\])? (?P<msg>.*)$`),
 }
 
 func (s *Server) handleMessage(msg string, log *logrus.Entry) {

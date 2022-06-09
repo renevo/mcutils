@@ -54,7 +54,7 @@ func (m *MinecraftController) Say(ctx context.Context, msg string) error {
 }
 
 func (m *MinecraftController) Emote(ctx context.Context, msg string) error {
-	_, err := m.Execute(ctx, fmt.Sprintf("me %s", msg), minecraft.EventServerEmote)
+	_, err := m.Execute(ctx, fmt.Sprintf("me %s", msg), minecraft.EventServerChat)
 	return errors.Wrap(err, "failed to emote something")
 }
 

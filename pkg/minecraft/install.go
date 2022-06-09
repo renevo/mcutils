@@ -59,7 +59,7 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 			}
 		}
 
-		if err := os.WriteFile(fabricSettings, []byte(fmt.Sprintf("serverJar=%s.jar", s.MinecraftJar())), 0744); err != nil {
+		if err := os.WriteFile(fabricSettings, []byte(fmt.Sprintf("serverJar=%s", s.MinecraftJar())), 0744); err != nil {
 			return s.VersionDetails, errors.Wrapf(err, "failed to write fabric properties: %q", fabricSettings)
 		}
 	}

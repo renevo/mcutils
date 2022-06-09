@@ -10,6 +10,7 @@ import (
 	"github.com/portcullis/logging"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/ext"
 	"github.com/renevo/mcutils/internal/control"
+	"github.com/renevo/mcutils/pkg/java"
 	"github.com/renevo/mcutils/pkg/minecraft"
 	"github.com/sirupsen/logrus"
 )
@@ -23,10 +24,10 @@ type module struct {
 	wg  sync.WaitGroup
 }
 
-func New() application.Module {
+func New(srv *minecraft.Server) application.Module {
 	m := &module{
 		cfg: &cfg{
-			Minecraft: minecraft.Default(),
+			Minecraft: srv,
 		},
 	}
 
@@ -67,16 +68,28 @@ func (m *module) Initialize(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
+func (m *module) Install(ctx context.Context) error {
+	log := ext.Logger(ctx)
+	srv := ext.Minecraft(ctx)
+
+	log.Info("Installing server and dependencies")
+	v, err := srv.Install(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to install server")
+	}
+
+	log.Infof("Version ID: %q; Type: %q; URL: %q;", v.ID, v.Type, v.Downloads.Server.URL)
+	log.Infof("JAVA_HOME: %q", srv.JavaHome)
+	log.Infof("Exec Path: %q", java.ExecPath(srv.JavaHome))
+
+	return nil
+}
+
 func (m *module) Start(ctx context.Context) error {
 	log := ext.Logger(ctx)
 	srv := ext.Minecraft(ctx)
 	publisher := ext.Publisher(ctx)
 	subscriber := ext.Subscriber(ctx)
-
-	_, err := srv.Install(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to install server")
-	}
 
 	start := time.Now()
 	ctx, cancel := context.WithCancel(ctx)
