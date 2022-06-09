@@ -12,7 +12,13 @@ type logger struct {
 	ctx context.Context
 }
 
+const noSubscriber = `No subscribers to send message`
+
 func (l *logger) Error(msg string, err error, fields watermill.LogFields) {
+	if msg == noSubscriber {
+		return
+	}
+
 	log := ext.Logger(l.ctx)
 	if len(fields) > 0 {
 		log = log.WithFields(map[string]interface{}(fields))
@@ -21,6 +27,10 @@ func (l *logger) Error(msg string, err error, fields watermill.LogFields) {
 	log.Errorf(msg+": %s", err.Error())
 }
 func (l *logger) Info(msg string, fields watermill.LogFields) {
+	if msg == noSubscriber {
+		return
+	}
+
 	log := ext.Logger(l.ctx)
 	if len(fields) > 0 {
 		log = log.WithFields(map[string]interface{}(fields))
@@ -30,6 +40,10 @@ func (l *logger) Info(msg string, fields watermill.LogFields) {
 }
 
 func (l *logger) Debug(msg string, fields watermill.LogFields) {
+	if msg == noSubscriber {
+		return
+	}
+
 	log := ext.Logger(l.ctx)
 	if len(fields) > 0 {
 		log = log.WithFields(map[string]interface{}(fields))
@@ -39,6 +53,10 @@ func (l *logger) Debug(msg string, fields watermill.LogFields) {
 }
 
 func (l *logger) Trace(msg string, fields watermill.LogFields) {
+	if msg == noSubscriber {
+		return
+	}
+
 	log := ext.Logger(l.ctx)
 	if len(fields) > 0 {
 		log = log.WithFields(map[string]interface{}(fields))

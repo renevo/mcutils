@@ -5,7 +5,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/portcullis/application"
+	"github.com/renevo/bootstrap/modules/env"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/cnc"
+	"github.com/renevo/mcutils/internal/command/minecraft/modules/discord"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/gamerules"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/mcserver"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/pubsub"
@@ -18,19 +20,26 @@ func serverCommands() []*cobra.Command {
 	configFile := "./minecraft.hcl"
 	srv := minecraft.Default()
 
+	// our application bootstrap, since it is used multiple times, easier to just specify it here
+	boostrap := func() *application.Application {
+		return application.New("minecraft.server", "1.0.0",
+			application.WithConfigFile(configFile),
+			application.WithModule("Environment", env.New("", map[string]string{})),
+			application.WithModule("PubSub", pubsub.New()),
+			application.WithModule("Discord", discord.New()),
+			application.WithModule("GameRules", gamerules.New()),
+			application.WithModule("Minecraft", mcserver.New(srv)),
+			application.WithModule("Command & Control", cnc.New()),
+		)
+	}
+
 	commands := []*cobra.Command{}
 
 	commands = append(commands, &cobra.Command{
 		Use:   "validate",
 		Short: "Validates configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			app := application.New("mcutils", "1.0.0",
-				application.WithConfigFile(configFile),
-				application.WithModule("PubSub", pubsub.New()),
-				application.WithModule("GameRules", gamerules.New()),
-				application.WithModule("Minecraft", mcserver.New(srv)),
-				application.WithModule("Command & Control", cnc.New()),
-			)
+			app := boostrap()
 
 			if err := app.Validate(context.Background()); err != nil {
 				return err
@@ -51,15 +60,7 @@ func serverCommands() []*cobra.Command {
 		Use:   "install",
 		Short: "Installs the configured minecraft server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			app := application.New("mcutils", "1.0.0",
-				application.WithConfigFile(configFile),
-				application.WithModule("PubSub", pubsub.New()),
-				application.WithModule("GameRules", gamerules.New()),
-				application.WithModule("Minecraft", mcserver.New(srv)),
-				application.WithModule("Command & Control", cnc.New()),
-			)
-
-			return app.Install(context.Background())
+			return boostrap().Install(context.Background())
 		},
 	})
 
@@ -67,15 +68,7 @@ func serverCommands() []*cobra.Command {
 		Use:   "run",
 		Short: "Run a minecraft server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			app := application.New("mcutils", "1.0.0",
-				application.WithConfigFile(configFile),
-				application.WithModule("PubSub", pubsub.New()),
-				application.WithModule("GameRules", gamerules.New()),
-				application.WithModule("Minecraft", mcserver.New(srv)),
-				application.WithModule("Command & Control", cnc.New()),
-			)
-
-			return app.Run(context.Background())
+			return boostrap().Run(context.Background())
 		},
 	})
 

@@ -50,14 +50,15 @@ func (m *module) Stop(ctx context.Context) error {
 }
 
 func (m *module) setGameRules(ctx context.Context, cancelFn context.CancelFunc, ch <-chan *message.Message) {
+	log := ext.Logger(ctx)
+	srv := ext.Minecraft(ctx)
+
 	select {
 	case <-ctx.Done():
 		return
 	case msg := <-ch:
 		msg.Ack()
 
-		log := ext.Logger(ctx)
-		srv := ext.Minecraft(ctx)
 		for rule, value := range m.cfg.Rules {
 			if err := srv.ExecuteCommand(fmt.Sprintf("gamerule %s %s", rule, value)); err != nil {
 				log.Errorf("failed to set game rule %q", rule)

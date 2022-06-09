@@ -49,3 +49,6 @@ game_rules = {
   spawnRadius                = "0"
   universalAnger             = "true"
 }
+
+discord_server_id      = "152083503767486464"
+discord_server_channel = "984537987117383740"

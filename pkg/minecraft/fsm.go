@@ -26,6 +26,8 @@ const (
 	EventWhitelistUnknown  = "player_whitelist_unknown"
 	EventWhitelistReloaded = "whitelist_reloaded"
 	EventServerChat        = "server_chat"
+	EventChat              = "chat"
+	EventAll               = "*"
 )
 
 func (s *Server) createFSM() *fsm.FSM {
@@ -59,7 +61,10 @@ var eventMatchers = map[string]*regexp.Regexp{
 	EventWhitelistRemove:   regexp.MustCompile(`^Removed (?P<player>.*) from the whitelist$`),
 	EventWhitelistUnknown:  regexp.MustCompile(`^That player does not exist$`),
 	EventWhitelistReloaded: regexp.MustCompile(`^Reloaded the whitelist$`),
-	EventServerChat:        regexp.MustCompile(`^(\<|\* |\[)Server(?:\>|\])? (?P<msg>.*)$`),
+	EventServerChat:        regexp.MustCompile(`^(\<|\* |\[)Server(?:\>|\])? (?P<message>.*)$`),
+	EventPlayerJoin:        regexp.MustCompile(`^(?P<player>.*) joined the game$`),
+	EventPlayerLeave:       regexp.MustCompile(`^(?P<player>.*) left the game$`),
+	EventChat:              regexp.MustCompile(`^\<(?P<player>[A-Za-z0-9_]+)\>\s(?P<message>.*)$`),
 }
 
 func (s *Server) handleMessage(msg string, log *logrus.Entry) {
@@ -85,7 +90,10 @@ func (s *Server) handleMessage(msg string, log *logrus.Entry) {
 				msg.Metadata[name] = matches[i]
 			}
 
+			msg.Metadata["event"] = k
+
 			_ = s.publisher.Publish(k, msg)
+			_ = s.publisher.Publish(EventAll, msg)
 		}
 	}
 
@@ -106,7 +114,10 @@ func (s *Server) handleMessage(msg string, log *logrus.Entry) {
 				msg.Metadata[name] = matches[i]
 			}
 
+			msg.Metadata["event"] = k
+
 			_ = s.publisher.Publish(k, msg)
+			_ = s.publisher.Publish(EventAll, msg)
 		}
 	}
 }
