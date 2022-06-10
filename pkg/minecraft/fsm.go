@@ -21,6 +21,7 @@ const (
 	EventSaved             = "saved"
 	EventPlayerJoin        = "player_join"
 	EventPlayerLeave       = "player_leave"
+	EventPlayerAdvancement = "player_achievement"
 	EventWhitelistAdd      = "player_whitelist_add"
 	EventWhitelistRemove   = "player_whitelist_remove"
 	EventWhitelistUnknown  = "player_whitelist_unknown"
@@ -65,6 +66,7 @@ var eventMatchers = map[string]*regexp.Regexp{
 	EventPlayerJoin:        regexp.MustCompile(`^(?P<player>.*) joined the game$`),
 	EventPlayerLeave:       regexp.MustCompile(`^(?P<player>.*) left the game$`),
 	EventChat:              regexp.MustCompile(`^\<(?P<player>[A-Za-z0-9_]+)\>\s(?P<message>.*)$`),
+	EventPlayerAdvancement: regexp.MustCompile(`^(?P<player>[A-Za-z0-9_]+) has made the advancement \[(?P<advancement>.*)\]$`),
 }
 
 func (s *Server) handleMessage(msg string, log *logrus.Entry) {

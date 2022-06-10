@@ -26,7 +26,7 @@ minecraft "Burpcraft" {
     enforce-whitelist = true
     white-list        = true
     pvp               = false
-    level-seed        = "r0flc0pt3r"
+    level-seed        = "-156227665"
     gamemode          = "survival"
     max-players       = 10
     force-gamemode    = true

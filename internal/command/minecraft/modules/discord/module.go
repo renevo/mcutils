@@ -161,6 +161,18 @@ func (m *module) handleEvents(ctx context.Context, ch <-chan *message.Message) {
 			}
 
 			m.sendMessage("> [**%s**]: %s", player, message)
+
+		case minecraft.EventPlayerAdvancement:
+			player, ok := msg.Metadata["player"]
+			if !ok {
+				continue
+			}
+			advancement, ok := msg.Metadata["advancement"]
+			if !ok {
+				continue
+			}
+
+			m.sendMessage("> **%s** *got advancement* **%s**", player, advancement)
 		}
 	}
 }
