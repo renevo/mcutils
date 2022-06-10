@@ -34,6 +34,12 @@ minecraft "Burpcraft" {
     "query.port"      = 25565
   }
 
+  purge_datapacks = true
+
+  datapack "minecraft-datapack" {
+    url = "https://github.com/renevo/minecraft-datapack/archive/refs/tags/v1.19-1.0.0.zip"
+  }
+
   purge_mods = true
 
   mod "fabric-api" {
@@ -77,7 +83,7 @@ maps: [
                 world: "burpcraft"
                 skyColor: "#7dabff"
                 ambientLight: 0
-                renderCaves: false
+                renderCaves: true
                 renderEdges: true
                 useCompression: true
                 ignoreMissingLightData: false

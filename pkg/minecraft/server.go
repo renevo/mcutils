@@ -32,6 +32,9 @@ type Server struct {
 	Mods                   Mods   `hcl:"mod,block"`
 	PurgeMods              bool   `hcl:"purge_mods,optional"`
 
+	Datapacks      Datapacks `hcl:"datapack,block"`
+	PurgeDatapacks bool      `hcl:"purge_datapacks,optional"`
+
 	console   *bufio.Writer
 	fsm       *fsm.FSM
 	publisher message.Publisher

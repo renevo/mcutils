@@ -48,6 +48,22 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 		return s.VersionDetails, errors.Wrap(err, "failed to merge server properties")
 	}
 
+	worldName := s.Properties["level-name"]
+	if worldName == "" {
+		worldName = "world"
+	}
+
+	// datapacks
+	if s.PurgeDatapacks {
+		if err := os.RemoveAll(filepath.Join(s.Path, worldName, "datapacks")); err != nil {
+			return s.VersionDetails, errors.Wrap(err, "failed to purge datapacks directory")
+		}
+	}
+
+	if err := s.Datapacks.Install(ctx, filepath.Join(s.Path, worldName)); err != nil {
+		return s.VersionDetails, errors.Wrap(err, "failed to install datapacks")
+	}
+
 	// optional fabric
 	if s.FabricVersionInstaller != "" && s.FabricVersionLoader != "" {
 		fabricFile := s.FabricJar()
