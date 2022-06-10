@@ -33,6 +33,85 @@ minecraft "Burpcraft" {
     enable-query      = true
     "query.port"      = 25565
   }
+
+  purge_mods = true
+
+  mod "fabric-api" {
+    url = "https://github.com/FabricMC/fabric/releases/download/0.55.3%2B1.19/fabric-api-0.55.3+1.19.jar"
+  }
+
+  mod "bluemap" {
+    url = "https://github.com/BlueMap-Minecraft/BlueMap/releases/download/v1.7.3/BlueMap-1.7.3-fabric-1.18.jar"
+
+    config "config/bluemap/core.conf" {
+      content = <<EOC
+accept-download: true
+renderThreadCount: 1
+metrics: false
+data: "bluemap"
+EOC
+    }
+
+    config "config/bluemap/plugin.conf" {
+      content = <<EOC
+liveUpdates: true
+skinDownload: true
+hiddenGameModes: [
+        "spectator"
+]
+hideInvisible: true
+hideSneaking: false
+fullUpdateInterval: 1440
+EOC
+    }
+
+    config "config/bluemap/render.conf" {
+      content = <<EOC
+webroot: "bluemap/web"
+useCookies: true
+enableFreeFlight: true
+maps: [
+        {
+                id: "world"
+                name: "Burpcraft"
+                world: "burpcraft"
+                skyColor: "#7dabff"
+                ambientLight: 0
+                renderCaves: false
+                renderEdges: true
+                useCompression: true
+                ignoreMissingLightData: false
+        }
+        {
+                id: "end"
+                name: "End"
+                world: "burpcraft/DIM1"
+                skyColor: "#080010"
+                renderCaves: true
+                ambientLight: 0.6
+        }
+        {
+                id: "nether"
+                name: "Nether"
+                world: "burpcraft/DIM-1"
+                skyColor: "#290000"
+                renderCaves: true
+                ambientLight: 0.6
+                renderEdges: true
+        }
+]
+EOC
+    }
+
+    config "config/bluemap/webserver.conf" {
+      content = <<EOC
+enabled: true
+webroot: "bluemap/web"
+port: 8100
+maxConnectionCount: 100
+EOC
+    }
+  }
 }
 
 // allows for remote control over RPC

@@ -64,5 +64,16 @@ func (s *Server) Install(ctx context.Context) (version.Version, error) {
 		}
 	}
 
+	// mods
+	if s.PurgeMods {
+		if err := os.RemoveAll(filepath.Join(s.Path, "mods")); err != nil {
+			return s.VersionDetails, errors.Wrap(err, "failed to purge mod directory")
+		}
+	}
+
+	if err := s.Mods.Install(ctx, s.Path); err != nil {
+		return s.VersionDetails, errors.Wrap(err, "failed to install mods")
+	}
+
 	return s.VersionDetails, nil
 }

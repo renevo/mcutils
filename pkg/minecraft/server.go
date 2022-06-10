@@ -16,7 +16,7 @@ import (
 
 // Server for Minecraft
 type Server struct {
-	Name           string     `hcl:"name,label" property:"motd"`
+	Name           string     `hcl:"name,label"`
 	Path           string     `hcl:"path"`
 	Version        string     `hcl:"version"`
 	Snapshot       bool       `hcl:"snapshot,optional"`
@@ -29,6 +29,8 @@ type Server struct {
 
 	FabricVersionLoader    string `hcl:"fabric_loader,optional"`
 	FabricVersionInstaller string `hcl:"fabric_installer,optional"`
+	Mods                   Mods   `hcl:"mod,block"`
+	PurgeMods              bool   `hcl:"purge_mods,optional"`
 
 	console   *bufio.Writer
 	fsm       *fsm.FSM
