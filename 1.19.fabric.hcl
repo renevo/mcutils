@@ -30,6 +30,8 @@ minecraft "Burpcraft" {
     gamemode          = "survival"
     max-players       = 10
     force-gamemode    = true
+    enable-query      = true
+    "query.port"      = 25565
   }
 }
 

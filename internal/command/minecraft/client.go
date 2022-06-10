@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/millkhan/mcstatusgo/v2"
 	"github.com/pkg/errors"
 	"github.com/renevo/rpc"
 	"github.com/spf13/cobra"
@@ -41,6 +42,32 @@ func clientCommands() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			reply := false
 			return rpcFunc("Execute", args[0], &reply)
+		},
+	})
+
+	commands = append(commands, &cobra.Command{
+		Use:   "status",
+		Short: "Server Status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverURL := "localhost"
+			initialTimeout := time.Second * 10
+			ioTimeout := time.Second * 5
+
+			fullQuery, err := mcstatusgo.FullQuery(serverURL, 25565, initialTimeout, ioTimeout)
+			if err != nil {
+				return errors.Wrapf(err, "failed to get server status for %q", serverURL)
+			}
+
+			fmt.Printf("Map: %s\n", fullQuery.MapName)
+			fmt.Printf("Version: %s\n", fullQuery.Version.Name)
+			fmt.Printf("Ping: %d\n", fullQuery.Latency)
+			fmt.Printf("Players %d/%d\n", fullQuery.Players.Online, fullQuery.Players.Max)
+
+			for _, p := range fullQuery.Players.PlayerList {
+				fmt.Printf("\t%s\n", p)
+			}
+
+			return nil
 		},
 	})
 

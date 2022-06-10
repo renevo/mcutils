@@ -11,6 +11,7 @@ import (
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/gamerules"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/mcserver"
 	"github.com/renevo/mcutils/internal/command/minecraft/modules/pubsub"
+	"github.com/renevo/mcutils/internal/command/minecraft/modules/status"
 	"github.com/renevo/mcutils/pkg/minecraft"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -30,6 +31,7 @@ func serverCommands() []*cobra.Command {
 			application.WithModule("GameRules", gamerules.New()),
 			application.WithModule("Minecraft", mcserver.New(srv)),
 			application.WithModule("Command & Control", cnc.New()),
+			application.WithModule("Server Status", status.New()),
 		)
 	}
 

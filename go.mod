@@ -26,6 +26,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.12.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect
+	github.com/millkhan/mcstatusgo/v2 v2.2.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/portcullis/config v0.1.0 // indirect
