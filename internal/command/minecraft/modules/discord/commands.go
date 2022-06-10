@@ -15,8 +15,8 @@ func (m *module) addCommands(ctx context.Context, s *discordgo.Session) error {
 
 	commands := []*discordgo.ApplicationCommand{
 		{
-			Name:        "burpcraft",
-			Description: "Burpcraft Commands",
+			Name:        "minecraft",
+			Description: "Minecraft Commands",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "status",
@@ -28,7 +28,7 @@ func (m *module) addCommands(ctx context.Context, s *discordgo.Session) error {
 	}
 
 	commandHandlers := map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		"burpcraft": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		"minecraft": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			options := i.ApplicationCommandData().Options
 			if len(options) == 0 {
 				content := "Unknown command"
@@ -57,9 +57,8 @@ func (m *module) addCommands(ctx context.Context, s *discordgo.Session) error {
 				}
 
 				// really basic for now
-				content := fmt.Sprintf(`Server Status:
-*%s*
-
+				content := fmt.Sprintf(`Minecraft Server: *%s*
+				
 **Map**: %s
 **Version**: %s
 **Players**: %d/%d
