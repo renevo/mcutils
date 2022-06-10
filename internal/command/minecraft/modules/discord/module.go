@@ -86,11 +86,29 @@ func (m *module) Stop(ctx context.Context) error {
 }
 
 func (m *module) handleMessages(ctx context.Context) func(*discordgo.Session, *discordgo.MessageCreate) {
-	log := ext.Logger(ctx)
+	srv := ext.Minecraft(ctx)
 
 	return func(s *discordgo.Session, msg *discordgo.MessageCreate) {
-		// not doing anything right now
-		log.Warnf("[%s] %s", msg.ChannelID, msg.Content)
+		// only specified channel
+		if msg.ChannelID != m.cfg.ChannelID {
+			return
+		}
+
+		// don't get into an echo loop....
+		if msg.Author.ID == s.State.User.ID {
+			return
+		}
+
+		content := msg.ContentWithMentionsReplaced()
+		if len(content) == 0 {
+			return
+		}
+
+		// use tellraw so it doesn't look like it came from the server
+		_ = srv.ExecuteCommand(fmt.Sprintf(`tellraw @a {"text": %q, "color": "blue", "extra": [ { "text": %q, "color": "white" } ] }`,
+			"<"+msg.Author.Username+">",
+			" "+content,
+		))
 	}
 }
 
