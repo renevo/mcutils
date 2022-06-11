@@ -34,13 +34,68 @@ minecraft "Burpcraft" {
     "query.port"      = 25565
   }
 
-  purge_datapacks = true
+  purge_datapacks = false
 
   datapack "minecraft-datapack" {
-    url = "https://github.com/renevo/minecraft-datapack/archive/refs/tags/v1.19-1.0.0.zip"
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/minecraft-datapack.zip"
+  }
+  datapack "afk-display" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/afk-display-v1.1.3.zip"
+  }
+  datapack "anti-enderman-grief" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/anti-enderman-grief-v1.1.3.zip"
+  }
+  datapack "cauldron-concret" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/cauldron-concrete-v2.0.6.zip"
+  }
+  datapack "classic-fishing-loot" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/classic-fishing-loot-v1.1.3.zip"
+  }
+  datapack "double-shulker-shells" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/double-shulker-shells-v1.3.3.zip"
+  }
+  datapack "dragon-drops" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/dragon-drops-v1.3.3.zip"
+  }
+  datapack "mob-heads" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/mob-heads-v2.10.0.zip"
+  }
+  datapack "player-heads" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/player-heads-v1.1.3.zip"
+  }
+  datapack "silence-mobs" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/silence-mobs-v1.1.3.zip"
+  }
+  datapack "recipe-unlock" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/unlock-all-recipes-v2.0.4.zip"
+  }
+  datapack "custom-recipes" {
+    url = "https://github.com/renevo/minecraft-datapack/releases/download/v1.19-1.1.0/VanillaTweaks-crafting.zip"
   }
 
-  purge_mods = true
+  purge_mods = false
+
+  mod "carpet" {
+    url = "https://github.com/gnembon/fabric-carpet/releases/download/1.4.79/fabric-carpet-1.19-1.4.79+v220607.jar"
+
+    config "burpcraft/carpet.conf" {
+      content = <<EOC
+locked
+
+antiCheatDisabled true
+commandLog true
+commandScript ops
+defaultLoggers mobcaps,tps
+lagFreeSpawning true
+leadFix true
+lightningKillsDropsFix true
+persistentParrots true
+scriptsAutoload true
+stackableShulkerBoxes true
+xpNoCooldown true
+      EOC
+    }
+  }
 
   mod "fabric-api" {
     url = "https://github.com/FabricMC/fabric/releases/download/0.55.3%2B1.19/fabric-api-0.55.3+1.19.jar"
@@ -136,6 +191,14 @@ game_rules = {
   spawnRadius                = "0"
   universalAnger             = "true"
 }
+
+startup_commands = [
+  "script download survival/combine_xp_orbs.sc",
+  "script download survival/silk_budding_amethyst.sc",
+  "script download survival/silk_spawners.sc",
+  "script download survival/simply_harvest.sc",
+  "script load ai_tracker",
+]
 
 discord_server_id      = "152083503767486464"
 discord_server_channel = "984537987117383740"

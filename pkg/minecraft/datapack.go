@@ -14,8 +14,9 @@ import (
 type Datapacks []Datapack
 
 type Datapack struct {
-	Name string `hcl:"name,label"`
-	URL  string `hcl:"url"`
+	Name       string `hcl:"name,label"`
+	URL        string `hcl:"url"`
+	PrefixName bool   `hcl:"prefix_name,optional"`
 }
 
 func (d Datapacks) Install(ctx context.Context, worldPath string) error {
@@ -32,7 +33,12 @@ func (d Datapacks) Install(ctx context.Context, worldPath string) error {
 		}
 
 		_, file := path.Split(endpoint.Path)
-		datapackPath := filepath.Join(datapacksPath, pack.Name+"-"+file)
+		var datapackPath string
+		if pack.PrefixName {
+			datapackPath = filepath.Join(datapacksPath, pack.Name+"-"+file)
+		} else {
+			datapackPath = filepath.Join(datapacksPath, file)
+		}
 
 		if _, err := os.Stat(datapackPath); os.IsNotExist(err) {
 			if err := download.File(ctx, pack.URL, datapackPath); err != nil {
