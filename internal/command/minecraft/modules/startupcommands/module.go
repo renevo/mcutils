@@ -2,6 +2,7 @@ package startupcommands
 
 import (
 	"context"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/pkg/errors"
@@ -57,9 +58,20 @@ func (m *module) runStartupCommands(ctx context.Context, cancelFn context.Cancel
 	case msg := <-ch:
 		msg.Ack()
 
+		// insert a delay before we push commands
+		t := time.NewTimer(time.Second * 5)
+		defer t.Stop()
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+
+		}
+
 		for _, cmd := range m.cfg.Commands {
 			if err := srv.ExecuteCommand(cmd); err != nil {
-				log.Errorf("Failed to execute command %q", cmd)
+				log.Errorf("Failed to execute command %q: %v", cmd, err)
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package gamerules
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/pkg/errors"
@@ -53,17 +54,29 @@ func (m *module) setGameRules(ctx context.Context, cancelFn context.CancelFunc, 
 	log := ext.Logger(ctx)
 	srv := ext.Minecraft(ctx)
 
+	defer cancelFn()
+
 	select {
 	case <-ctx.Done():
 		return
 	case msg := <-ch:
 		msg.Ack()
 
+		// insert a delay before we push commands
+		t := time.NewTimer(time.Second * 5)
+		defer t.Stop()
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+
+		}
+
 		for rule, value := range m.cfg.Rules {
 			if err := srv.ExecuteCommand(fmt.Sprintf("gamerule %s %s", rule, value)); err != nil {
-				log.Errorf("failed to set game rule %q", rule)
+				log.Errorf("failed to set game rule %q: %v", rule, err)
 			}
 		}
-		cancelFn()
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/looplab/fsm"
@@ -38,6 +39,7 @@ type Server struct {
 	console   *bufio.Writer
 	fsm       *fsm.FSM
 	publisher message.Publisher
+	wmu       sync.Mutex
 }
 
 // Default will return a default configured Minecraft server
@@ -115,6 +117,9 @@ func (s *Server) ResolveVersion(ctx context.Context) error {
 
 // ExecuteCommand against the server, this is a standard minecraft command
 func (s *Server) ExecuteCommand(cmd string) error {
+	s.wmu.Lock()
+	defer s.wmu.Unlock()
+
 	if !s.fsm.Is(StateOnline) {
 		return errors.Errorf("server is %s", s.fsm.Current())
 	}
