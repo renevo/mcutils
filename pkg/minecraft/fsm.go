@@ -62,7 +62,7 @@ var eventMatchers = map[string]*regexp.Regexp{
 	EventWhitelistRemove:   regexp.MustCompile(`^Removed (?P<player>.*) from the whitelist$`),
 	EventWhitelistUnknown:  regexp.MustCompile(`^That player does not exist$`),
 	EventWhitelistReloaded: regexp.MustCompile(`^Reloaded the whitelist$`),
-	EventServerChat:        regexp.MustCompile(`^(\<|\* |\[)Server(?:\>|\])? (?P<message>.*)$`),
+	EventServerChat:        regexp.MustCompile(`^(\<|\* |\[)(Server|Not Secure)(?:\>|\])? (?P<message>.*)$`),
 	EventPlayerJoin:        regexp.MustCompile(`^(?P<player>.*) joined the game$`),
 	EventPlayerLeave:       regexp.MustCompile(`^(?P<player>.*) left the game$`),
 	EventChat:              regexp.MustCompile(`^\<(?P<player>[A-Za-z0-9_]+)\>\s(?P<message>.*)$`),
